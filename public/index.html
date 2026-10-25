@@ -37,7 +37,8 @@ async function pay(sku){
   const btn=document.getElementById('payBtn'), msg=document.getElementById('msg');
   btn.disabled=true; msg.textContent='正在创建订单…';
   try{
-    const code=(document.getElementById('stockCode').value||'').trim();
+    // 全角数字/多余空白自动归一（中文输入法友好）
+    const code=(document.getElementById('stockCode').value||'').replace(/[０-９]/g, c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/\s+/g,'').trim();
     if(!/^\d{6}$/.test(code)){msg.textContent='请输入6位股票代码';return;}
     const r=await fetch('/api/pay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sku,stockCode:code})});
     const data=await r.json();
