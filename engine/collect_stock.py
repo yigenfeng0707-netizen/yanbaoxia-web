@@ -128,6 +128,36 @@ def tx_kline(code, days=450):
     return out
 
 
+def sina_realtime(code):
+    """新浪实时行情（需Referer；stdlib）"""
+    mkt = "sh" if code[0] in "69" else "sz"
+    raw = _get(f"https://hq.sinajs.cn/list={mkt}{code}", headers={"Referer": "https://finance.sina.com.cn/"})
+    fields = raw.decode("gbk", "ignore").split('"')[1].split(",")
+    if len(fields) < 10:
+        raise ValueError("sina fields too few")
+    return {"name": fields[0], "prev_close": float(fields[2]), "price": float(fields[3]),
+            "high": float(fields[4]), "low": float(fields[5]),
+            "volume": float(fields[8]), "amount": float(fields[9])}
+
+
+def netease_kline(code, days=450):
+    """网易历史日K CSV（stdlib；第四路K线源）"""
+    mkt = "0" if code[0] in "69" else "1"
+    end = date.today().isoformat().replace("-", "")
+    start = (date.today() - timedelta(days=days)).isoformat().replace("-", "")
+    url = (f"https://quotes.money.163.com/service/chddata.html?code={mkt}{code}"
+           f"&start={start}&end={end}&fields=TCLOSE;HIGH;LOW;TOPEN")
+    raw = _get(url, headers={"Referer": "https://quotes.money.163.com/"}).decode("gbk", "ignore")
+    out = []
+    for line in raw.strip().splitlines()[1:]:
+        r = line.split(",")
+        try:
+            out.append({"date": r[0].strip(), "close": float(r[1]), "high": float(r[2]), "low": float(r[3])})
+        except (ValueError, IndexError):
+            continue
+    return list(reversed(out))
+
+
 def em_fundamentals(code):
     """东方财富业绩报表序列(报告期/营收/归母/同比)"""
     url = ("https://datacenter.eastmoney.com/api/data/v1/get?reportName=RPT_LICO_FN_CPD"
@@ -237,8 +267,13 @@ def run_stock(cfg, quick=False):
         tx = tx_realtime(code)
     except Exception as e:
         print(f"  [TX 失效] {type(e).__name__}: {str(e)[:80]}")
+    sina_rt = None
+    try:
+        sina_rt = sina_realtime(code)
+    except Exception as e:
+        print(f"  [SINA 失效] {type(e).__name__}: {str(e)[:80]}")
 
-    px = (em or tx or bs_last or {}).get("price") or (bs_last and bs_last.get("close"))
+    px = (em or tx or bs_last or {}).get("price") or (bs_last and bs_last.get("close")) or (sina_rt and sina_rt["price"])
     if px is None:
         print(f"✗ {code} 全部来源失效，跳过")
         return 2
@@ -250,7 +285,7 @@ def run_stock(cfg, quick=False):
     # 3) 交叉校验（凡数双源）
     bs_note = f"BS@{bs_last['date']}" if bs_last else "BS"
     for m, pairs, tol in (
-        ("价格", [("EM", em and em["price"]), ("TX", tx and tx["price"]), (bs_note, bs_last and bs_last["close"])], PRICE_TOL),
+        ("价格", [("EM", em and em["price"]), ("TX", tx and tx["price"]), ("SINA", sina_rt and sina_rt["price"]), (bs_note, bs_last and bs_last["close"])], PRICE_TOL),
         ("昨收", [("EM", em and em["prev_close"]), ("TX", tx and tx["prev_close"])], PRICE_TOL),
         ("总市值(亿)", [("EM", em and em["mcap_yi"]), ("TX", tx and tx["mcap_yi"])], PRICE_TOL),
         ("PE-TTM", [("EM", em and em["pe_ttm"]), (bs_note, bs_last and bs_last.get("pe_ttm"))], 0.01),
@@ -291,7 +326,14 @@ def run_stock(cfg, quick=False):
                 checks.append(cross_check("TXK腾讯日K收盘 vs 其他源", [("TXK", tx_rows[-1]["close"]), (bs_note, bs_last and bs_last["close"]), ("EM", em and em["price"]), ("TX", tx and tx["price"])], PRICE_TOL))
         except Exception as e:
             print(f"  [TXK 失效] {type(e).__name__}: {str(e)[:80]}")
-        snap["technicals"] = technicals(bs_rows or ak_rows or tx_rows)
+        nete_rows = []
+        try:
+            nete_rows = netease_kline(code)
+            if nete_rows:
+                checks.append(cross_check("NETE网易日K收盘 vs 其他源", [("NETE", nete_rows[-1]["close"]), ("TXK", tx_rows and tx_rows[-1]["close"]), (bs_note, bs_last and bs_last["close"]), ("AK", ak_rows and ak_rows[-1]["close"])], PRICE_TOL))
+        except Exception as e:
+            print(f"  [NETE 失效] {type(e).__name__}: {str(e)[:80]}")
+        snap["technicals"] = technicals(bs_rows or ak_rows or tx_rows or nete_rows)
         try:
             fund = em_fundamentals(code)
             snap["fundamentals_latest"] = fund[:6]
