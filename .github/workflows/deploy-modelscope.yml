@@ -1,0 +1,45 @@
+name: deploy-modelscope
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 注入沙箱支付配置（GitHub Secrets，不入库）
+        env:
+          SANDBOX_CONFIG_JSON: ${{ secrets.SANDBOX_CONFIG_JSON }}
+        if: ${{ env.SANDBOX_CONFIG_JSON != '' }}
+        run: printf '%s' "$SANDBOX_CONFIG_JSON" > .alipay-sandbox.json
+
+      - name: 写运行时公网地址（支付回跳用）
+        env:
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          NOTIFY_URL: ${{ secrets.ALIPAY_NOTIFY_URL }}
+        if: ${{ env.PUBLIC_BASE_URL != '' }}
+        run: |
+          {
+            echo "BASE_URL=$PUBLIC_BASE_URL"
+            if [ -n "$NOTIFY_URL" ]; then echo "ALIPAY_NOTIFY_URL=$NOTIFY_URL"; fi
+          } > env.production
+
+      - name: 推送到魔搭创空间（Docker 自动构建）
+        env:
+          MS_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
+          MS_STUDIO: ${{ secrets.MODELSCOPE_STUDIO }}
+        if: ${{ env.MS_TOKEN != '' }}
+        run: |
+          git config user.name "deploy-bot"
+          git config user.email "deploy-bot@users.noreply.github.com"
+          git add -A
+          git add -f .alipay-sandbox.json 2>/dev/null || true
+          git commit -m "deploy: ${{ github.sha }}" || echo "no changes to commit"
+          git remote remove ms 2>/dev/null || true
+          git remote add ms "https://oauth2:$MS_TOKEN@www.modelscope.cn/studios/$MS_STUDIO.git"
+          git push ms HEAD:master --force
+          echo "已推送，魔搭将自动构建 Docker 镜像并上线"

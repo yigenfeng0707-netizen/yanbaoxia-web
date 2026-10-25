@@ -33,7 +33,7 @@ def gh(endpoint, method="GET", body=None):
 def collect_files():
     out = []
     for dirpath, dirnames, filenames in os.walk(ROOT):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".git")]
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and d != ".git"]
         for fn in filenames:
             if fn in SKIP_FILES or fn.endswith(".log"):
                 continue
