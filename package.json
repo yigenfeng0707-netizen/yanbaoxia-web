@@ -1,0 +1,13 @@
+{
+  "name": "yanbaoxia-web",
+  "version": "0.1.0",
+  "description": "研报侠 · AI付费研报生成站（支付宝AI付 PAYATHON 2026）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "alipay-sdk": "^4.14.0",
+    "express": "^4.19.2"
+  }
+}

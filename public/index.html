@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>研报侠 · AI付费研报生成站</title>
+<style>
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0f1117;color:#e8eaf0;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center}
+  .card{background:#171a23;border:1px solid #2a2f3d;border-radius:16px;padding:40px;max-width:520px;width:92%}
+  .tag{color:#c9a84c;letter-spacing:4px;font-size:12px}
+  h1{font-size:26px;margin:10px 0 6px}
+  .sub{color:#9aa1b2;font-size:14px;line-height:1.7}
+  .sku{display:flex;justify-content:space-between;align-items:center;border:1px solid #2a2f3d;border-radius:12px;padding:16px;margin-top:22px}
+  .sku b{font-size:15px}.sku span{color:#9aa1b2;font-size:12px;display:block;margin-top:4px}
+  .price{color:#c9a84c;font-size:22px;font-weight:700}
+  button{width:100%;margin-top:18px;padding:13px;border:0;border-radius:10px;background:#c9a84c;color:#141414;font-size:15px;font-weight:700;cursor:pointer}
+  button:disabled{opacity:.5;cursor:wait}
+  #msg{color:#9aa1b2;font-size:13px;text-align:center;margin-top:12px;min-height:18px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="tag">YANBAOXIA · PAYATHON 2026</div>
+  <h1>研报侠</h1>
+  <p class="sub">输入一家上市公司，AI 生成机构级研究报告 + DCF 估值模型。<br>当前为沙箱演示：商品为示例标的贵州茅台已完成的研究成果交付。</p>
+  <div class="sku">
+    <div><b>单篇 AI 研究报告</b><span>输入6位A股代码 · 实时多源数据速览研报<br>预置标的（600519）另附15页完整研报+DCF估值模型</span></div>
+    <div class="price">¥9.90</div>
+  </div>
+  <input id="stockCode" placeholder="输入股票代码，如 600519" maxlength="6" inputmode="numeric"
+    style="width:100%;box-sizing:border-box;margin-top:16px;padding:12px 14px;border:1px solid #2a2f3d;border-radius:10px;background:#10131a;color:#e8eaf0;font-size:15px;letter-spacing:2px">
+  <button id="payBtn" onclick="pay('report_std')">立即购买（支付宝）</button>
+  <div id="msg"></div>
+  <p style="text-align:center;margin-top:14px"><a href="/orders" style="color:#9aa1b2;font-size:12px">订单查询 →</a></p>
+</div>
+<script>
+async function pay(sku){
+  const btn=document.getElementById('payBtn'), msg=document.getElementById('msg');
+  btn.disabled=true; msg.textContent='正在创建订单…';
+  try{
+    const code=(document.getElementById('stockCode').value||'').trim();
+    if(!/^\d{6}$/.test(code)){msg.textContent='请输入6位股票代码';return;}
+    const r=await fetch('/api/pay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sku,stockCode:code})});
+    const data=await r.json();
+    if(!r.ok||!data.paymentHtml){msg.textContent='下单失败：'+(data.message||r.status);btn.disabled=false;return;}
+    // pageExec 返回 HTML 表单：必须渲染并自动提交，禁止用 URL 跳转
+    const container=document.createElement('div');
+    container.innerHTML=data.paymentHtml;
+    container.style.position='fixed';container.style.top='0';container.style.left='0';
+    container.style.width='100%';container.style.height='100%';container.style.zIndex='9999';container.style.background='white';
+    document.body.appendChild(container);
+    const form=container.querySelector('form');
+    if(form) form.submit(); else {msg.textContent='支付表单异常';btn.disabled=false;}
+  }catch(e){msg.textContent='网络异常：'+e.message;btn.disabled=false;}
+}
+</script>
+</body>
+</html>

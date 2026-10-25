@@ -1,0 +1,6 @@
+node_modules/
+data/
+.alipay-sandbox.json
+env.production
+*.log
+.DS_Store

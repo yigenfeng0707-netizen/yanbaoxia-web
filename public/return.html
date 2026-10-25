@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>支付结果 · 研报侠</title>
+<style>
+  body{font-family:-apple-system,"PingFang SC",sans-serif;background:#0f1117;color:#e8eaf0;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center}
+  .card{background:#171a23;border:1px solid #2a2f3d;border-radius:16px;padding:40px;max-width:460px;width:90%;text-align:center}
+  h2{margin:8px 0}#st{font-size:15px;color:#c9a84c}#d{color:#9aa1b2;font-size:13px;margin-top:14px;line-height:1.8}
+  a{color:#c9a84c;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>研报侠</h2>
+  <div id="st">正在确认支付结果…</div>
+  <div id="d">同步回跳仅代表返回，支付结果以服务端核验为准。</div>
+  <div style="margin-top:16px"><a href="/">← 返回首页</a></div>
+</div>
+<script>
+// 同步回跳参数不作为支付成功依据：仅用服务端 Cookie 绑定的订单标识发起查询
+const st=document.getElementById('st'), d=document.getElementById('d');
+let tries=0;
+const timer=setInterval(async()=>{
+  tries++;
+  try{
+    const r=await fetch('/api/my/order/status');
+    if(r.status===404){clearInterval(timer);st.textContent='未携带订单信息';d.textContent='请从首页重新发起购买。';return;}
+    if(!r.ok){return;}
+    const j=await r.json();
+    if(j.orderStatus==='PAID'){clearInterval(timer);st.textContent='✅ 支付成功，研报交付中…';loadDeliverables(j.outTradeNo);}
+    else if(j.orderStatus==='CLOSED'){clearInterval(timer);st.textContent='订单已关闭';}
+    else if(tries>=150){clearInterval(timer);st.textContent='支付结果待确认';d.textContent='订单号 '+j.outTradeNo+'，可稍后在 <a href="/orders" style="color:#c9a84c">订单查询页</a> 查看。';}
+  }catch(e){}
+},2000);
+async function loadDeliverables(no){
+  const box=document.getElementById('d');
+  for(let i=0;i<150;i++){
+    try{
+      const r=await fetch('/api/order/'+encodeURIComponent(no)+'/deliverables');
+      if(r.status===403){box.textContent='订单未支付';return;}
+      const j=await r.json();
+      if(j.status==='READY'){
+        const items=j.files.map(f=>'<div style="margin:8px 0"><a href="'+f.url+'" style="color:#c9a84c">⬇ '+f.label+'</a></div>').join('');
+        box.innerHTML='标的 '+(j.stockCode||'')+' · 订单 '+no+items+(j.note?'<div style="color:#98a0ae;font-size:12px;margin-top:6px">'+j.note+'</div>':'');
+        return;
+      }
+      if(j.status==='FAILED'){box.textContent='交付生成失败，请联系客服退款处理';return;}
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,2000));
+  }
+  box.innerHTML='生成超时，可稍后在 <a href="/orders" style="color:#c9a84c">订单查询页</a> 重试下载';
+}
+</script>
+</body>
+</html>

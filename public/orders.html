@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单查询 · 研报侠</title>
+<style>
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0f1117;color:#e8eaf0;margin:0;padding:32px 16px}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{font-size:22px;border-bottom:2px solid #c9a84c;padding-bottom:8px;display:inline-block}
+  .tag{color:#c9a84c;letter-spacing:3px;font-size:12px}
+  table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
+  th,td{padding:10px 12px;border-bottom:1px solid #242938;text-align:left}
+  th{color:#9aa1b2;font-weight:600;font-size:12px}
+  .st{padding:2px 10px;border-radius:10px;font-size:12px}
+  .PAID{background:#12351f;color:#5bd08a}.PENDING{background:#3a3111;color:#e5c04b}.CLOSED{background:#33161a;color:#e07a85}.REFUNDED{background:#1a2533;color:#7ab3e0}
+  a{color:#c9a84c;text-decoration:none;margin-right:10px}
+  .empty{color:#9aa1b2;text-align:center;padding:40px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tag">YANBAOXIA MERCHANT CONSOLE</div>
+  <h1>订单查询（商户侧演示）</h1>
+  <table id="tb"><thead><tr><th>订单号</th><th>标的</th><th>内容</th><th>金额</th><th>状态</th><th>交付</th></tr></thead><tbody></tbody></table>
+  <div class="empty" id="empty" style="display:none">暂无订单</div>
+  <p style="color:#9aa1b2;font-size:12px;margin-top:18px">交付链接仅在订单已支付后可访问（服务端校验）；状态由支付宝异步通知/交易查询确认。</p>
+</div>
+<script>
+const STMAP={PAID:"已支付",PENDING_PAYMENT:"待支付",CLOSED:"已关闭",REFUNDED:"已退款"};
+fetch("/api/orders").then(r=>r.json()).then(list=>{
+  const tb=document.querySelector("#tb tbody");
+  if(!list.length){document.getElementById("empty").style.display="block";document.getElementById("tb").style.display="none";return;}
+  for(const o of list){
+    const tr=document.createElement("tr");
+    const d=o.deliverable;
+    let dl="—";
+    if(o.status==="PAID"&&d){
+      if(d.status==="READY") dl=d.files.map(f=>`<a href="${f.url}">⬇${f.label.slice(0,14)}</a>`).join("");
+      else if(d.status==="FAILED") dl="生成失败";
+      else dl="生成中…";
+    }
+    tr.innerHTML=`<td>${o.outTradeNo}</td><td>${o.stockCode||"—"}</td><td>${o.subject}</td><td>¥${o.totalAmount}</td>
+      <td><span class="st ${o.status}">${STMAP[o.status]||o.status}</span></td><td>${dl}</td>`;
+    tb.appendChild(tr);
+  }
+});
+</script>
+</body>
+</html>
