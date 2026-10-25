@@ -10,23 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: 注入沙箱支付配置（GitHub Secrets，不入库）
-        env:
-          SANDBOX_CONFIG_JSON: ${{ secrets.SANDBOX_CONFIG_JSON }}
-        if: ${{ env.SANDBOX_CONFIG_JSON != '' }}
-        run: printf '%s' "$SANDBOX_CONFIG_JSON" > .alipay-sandbox.json
-
-      - name: 写运行时公网地址（支付回跳用）
-        env:
-          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
-          NOTIFY_URL: ${{ secrets.ALIPAY_NOTIFY_URL }}
-        if: ${{ env.PUBLIC_BASE_URL != '' }}
-        run: |
-          {
-            echo "BASE_URL=$PUBLIC_BASE_URL"
-            if [ -n "$NOTIFY_URL" ]; then echo "ALIPAY_NOTIFY_URL=$NOTIFY_URL"; fi
-          } > env.production
+        with:
+          fetch-depth: 0
 
       - name: 自动创建魔搭 Docker 创空间（幂等，已存在则跳过）
         env:
@@ -35,39 +20,43 @@ jobs:
         if: ${{ env.MS_TOKEN != '' }}
         run: |
           SPACE_NAME="${MS_STUDIO##*/}"
-          BODY=$(cat <<JSON
-          {"Name":"$SPACE_NAME","Path":"$SPACE_NAME","SdkType":"docker","Visibility":1,"DeployedByUser":true,"InstanceTypeName":"platform/2v-cpu-16g-mem","InstanceNumber":1,"DiskSize":50,"ExpiredMinutes":-1}
-          JSON
-          )
           if git ls-remote "https://oauth2:$MS_TOKEN@www.modelscope.cn/studios/$MS_STUDIO.git" >/dev/null 2>&1; then
             echo "创空间已存在，跳过创建"
           else
-            echo "创空间不存在，调用魔搭 API 自动创建..."
+            BODY='{"Name":"'"$SPACE_NAME"'","Path":"'"$SPACE_NAME"'","SdkType":"docker","Visibility":1,"DeployedByUser":true,"InstanceTypeName":"platform/2v-cpu-16g-mem","InstanceNumber":1,"DiskSize":50,"ExpiredMinutes":-1}'
             RESP=$(curl -s -X POST -H "Authorization: Bearer $MS_TOKEN" -H "Content-Type: application/json" -d "$BODY" "https://www.modelscope.cn/api/v1/studios")
             echo "$RESP"
             OK=$(echo "$RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('Success'))" 2>/dev/null || echo False)
-            MSG=$(echo "$RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('Message',''))" 2>/dev/null || echo "")
             if [ "$OK" != "True" ]; then
-              echo "::error::魔搭创空间自动创建失败：$MSG"
-              echo "::error::若提示「未绑定阿里云账号」：请到 魔搭个人中心 → 账号设置 绑定阿里云账号（Docker 创空间实名要求），完成后重新运行本工作流即可全自动部署"
+              echo "::error::创空间自动创建失败（若提示未绑定阿里云账号，请到魔搭账号设置绑定后重跑）"
               exit 1
             fi
-            echo "空间创建成功，等待初始化..."
             sleep 15
           fi
 
-      - name: 推送到魔搭创空间（Docker 自动构建）
+      - name: 推送到魔搭创空间（基于空间历史叠加，正常推送免force）
         env:
           MS_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
           MS_STUDIO: ${{ secrets.MODELSCOPE_STUDIO }}
+          SANDBOX_CONFIG_JSON: ${{ secrets.SANDBOX_CONFIG_JSON }}
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          NOTIFY_URL: ${{ secrets.ALIPAY_NOTIFY_URL }}
         if: ${{ env.MS_TOKEN != '' }}
         run: |
           git config user.name "deploy-bot"
           git config user.email "deploy-bot@users.noreply.github.com"
-          git add -A
-          git add -f .alipay-sandbox.json 2>/dev/null || true
-          git commit -m "deploy: ${{ github.sha }}" || echo "no changes to commit"
           git remote remove ms 2>/dev/null || true
           git remote add ms "https://oauth2:$MS_TOKEN@www.modelscope.cn/studios/$MS_STUDIO.git"
-          git push ms HEAD:master --force
-          echo "已推送，魔搭将自动构建 Docker 镜像并上线"
+          git fetch ms master
+          git checkout -B msdeploy FETCH_HEAD
+          git checkout main -- .
+          printf '%s' "$SANDBOX_CONFIG_JSON" > .alipay-sandbox.json
+          if [ -n "$PUBLIC_BASE_URL" ]; then
+            { echo "BASE_URL=$PUBLIC_BASE_URL"
+              if [ -n "$NOTIFY_URL" ]; then echo "ALIPAY_NOTIFY_URL=$NOTIFY_URL"; fi
+            } > env.production
+          fi
+          git add -A -f
+          git commit -m "deploy: ${{ github.sha }}" || echo "no changes"
+          git push ms HEAD:master
+          echo "已推送，魔搭将按 ms_deploy.json 构建 Docker 镜像"
