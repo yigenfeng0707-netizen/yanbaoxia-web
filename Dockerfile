@@ -14,7 +14,9 @@ COPY engine/prebuilt/ /opt/workbench/output/
 
 ENV PORT=7860 \
     NODE_ENV=production \
-    ENGINE_WORKBENCH=/opt/workbench
+    ENGINE_WORKBENCH=/opt/workbench \
+    COLLECT_SNAPSHOT_DIR=/mnt/workspace/yanbaoxia-workbench-data/snapshots
 
 EXPOSE 7860
+RUN mkdir -p /mnt/workspace/yanbaoxia-workbench-data/snapshots || true
 CMD ["node", "server.js"]

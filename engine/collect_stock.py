@@ -24,6 +24,7 @@ collect_stock.py — 投研工作台·多源行情采集与交叉校验
 """
 import io
 import json
+import os
 import re
 import sys
 import time
@@ -333,8 +334,7 @@ def run_stock(cfg, quick=False):
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     quick = "--quick" in sys.argv
-    cfg_path = ROOT / "config" / "watchlist.json"
-    wl = json.loads(cfg_path.read_text(encoding="utf-8"))["stocks"] if cfg_path.exists() else []
+    wl = json.loads((ROOT / "config" / "watchlist.json").read_text(encoding="utf-8"))["stocks"]
     stocks = [s for s in wl if s["code"] in args] if args else wl
     if args:
         known = {s["code"] for s in stocks}
