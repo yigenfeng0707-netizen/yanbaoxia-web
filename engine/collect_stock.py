@@ -289,11 +289,16 @@ def run_stock(cfg, quick=False):
             return 2
         px = txk[-1]["close"]
         tx = {"price": px, "name": code, "mcap_yi": None, "pb": None, "prev_close": txk[-2]["close"] if len(txk) > 1 else None}
-        bs_last = None; em = None; sina_rt = None; ak_rows = []; bs_rows = []
-        snap["realtime"] = {"price": px, "prev_close": tx["prev_close"], "mcap_yi": None, "pe_ttm": None, "pb": None}
-        snap["technicals"] = technicals(txk)
-        snap["degraded"] = True
-        snap["degraded_note"] = "实时源全部失效，本快照由腾讯日K兜底生成（收盘价口径，无实时PE/PB）"
+        snap = {"code": code, "name": code,
+                "as_of": txk[-1]["date"],
+                "realtime": {"price": px, "prev_close": txk[-2]["close"] if len(txk) > 1 else None,
+                             "mcap_yi": None, "pe_ttm": None, "pb": None, "shares_yi": None},
+                "technicals": technicals(txk),
+                "cross_checks": [{"metric": "实时源", "verdict": "DEGRADED",
+                                  "detail": "全部实时源失效，腾讯日K收盘价兜底"}],
+                "fundamentals_latest": [],
+                "degraded": True,
+                "degraded_note": "实时源全部失效，本快照由腾讯日K兜底生成（收盘价口径，无实时PE/PB）"}
         out = SNAP_DIR / f"{code}_{date.today():%Y%m%d}_fallback.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(snap, ensure_ascii=False, indent=2), encoding="utf-8")
