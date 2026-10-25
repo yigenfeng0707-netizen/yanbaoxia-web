@@ -177,6 +177,7 @@ function ensureFulfillment(outTradeNo) {
   const files = engine.prebuiltFiles(code).map((f) => ({ label: f.label, path: f.path, filename: f.filename }));
   store.updateOrder(outTradeNo, (o) => { o.deliverable = { status: "GENERATING", files, generatedAt: formatAlipayTimestamp() }; });
   console.log(`[fulfillment] start code=${code} order=${outTradeNo}`);
+  let quickErr = null, deepErr = null;
   const addFile = (label, filename, rpath) => store.updateOrder(outTradeNo, (o) => {
     if (!o.deliverable) o.deliverable = { status: "GENERATING", files: [] };
     o.deliverable.files.push({ label, path: rpath, filename });
@@ -184,14 +185,19 @@ function ensureFulfillment(outTradeNo) {
   engine.generateQuickReport(code, outTradeNo).then((r) => {
     console.log(`[fulfillment] quick done order=${outTradeNo} ok=${r.ok} ${r.error || ""}`);
     if (r.ok) addFile("速览研报（实时多源数据，HTML）", `${code}_速览研报.html`, r.path);
+    else quickErr = r.error;
     return engine.generateDeepReport(code, outTradeNo);
   }).then((r) => {
     console.log(`[fulfillment] deep done order=${outTradeNo} ok=${r.ok} ${r.error || ""}`);
     if (r.ok) addFile("深度研报（多章节，HTML）", `${code}_深度研报.html`, r.path);
+    else deepErr = r.error;
     store.updateOrder(outTradeNo, (o) => {
       const n = (o.deliverable.files || []).length;
-      if (n > 0) { o.deliverable.status = "READY"; if (n < 2) o.deliverable.note = "部分交付物生成失败"; }
-      else { o.deliverable.status = "FAILED"; o.deliverable.note = "全部交付物生成失败"; }
+      const parts = [];
+      if (quickErr) parts.push("速览:" + quickErr.slice(0, 120));
+      if (deepErr) parts.push("深度:" + deepErr.slice(0, 120));
+      if (n > 0) { o.deliverable.status = "READY"; if (parts.length) o.deliverable.note = "部分失败 " + parts.join("；"); }
+      else { o.deliverable.status = "FAILED"; o.deliverable.note = "全部交付物生成失败 " + parts.join("；"); }
     });
     fulfillmentMemory.delete(outTradeNo);
   }).catch((e) => {
