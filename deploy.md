@@ -33,3 +33,25 @@ BASE_URL=https://xxx.loca.lt npm start
 - [ ] 数据库替换文件存储（幂等与订单持久化）
 - [ ] 移除商户侧 /orders 页或加访问控制（演示页无鉴权）
 - [ ] 人工代码审查（支付宝安全红线）
+
+## 方案D：魔搭创空间 Docker 部署（已实施 ✅ 当前主线）
+
+GitHub 仓库：https://github.com/yigenfeng0707-netizen/yanbaoxia-web
+
+**管线**：本地/云端改代码 → `python3 tools/push-github.py "msg"`（gh api Git Data API，绕开 git https 干扰）→ GitHub Actions 自动触发 → 注入沙箱配置 Secret + 公网地址 → git 强推魔搭创空间仓库 → 魔搭自动构建 Dockerfile（监听 7860）→ 公网链接。
+
+**创空间配置文件**（已在仓库内）：
+- `ms_deploy.json`：`{"sdk_type":"docker","resource_configuration":"platform/2v-cpu-16g-mem","port":7860}`
+- `Dockerfile`：node:20-slim + python3，容器内 ENGINE_WORKBENCH=/opt/workbench，数据写入魔搭持久目录 /mnt/workspace
+
+**你需要在魔搭侧完成的 3 步**：
+1. modelscope.cn → 创空间 → 创建：类型选 **Docker**，名称如 `yanbaoxia`（Docker 空间需实名认证）
+2. 个人中心 → 访问令牌 → 创建读写 Token
+3. 把 Token 给 Agent 设置两个 GitHub Secrets（或自行执行）：
+   ```bash
+   gh secret set MODELSCOPE_TOKEN --repo yigenfeng0707-netizen/yanbaoxia-web --body "<你的魔搭Token>"
+   gh secret set MODELSCOPE_STUDIO --repo yigenfeng0707-netizen/yanbaoxia-web --body "<魔搭用户名>/yanbaoxia"
+   ```
+4. （上线后）拿到创空间公网地址再设 `PUBLIC_BASE_URL`（支付同步回跳用），再触发一次部署。
+
+**容器内降级说明**：镜像未装 pandas 系依赖，baostock/akshare 两个源自动失效，技术面由新增的腾讯日K源（纯标准库）承担，多源校验仍成立。

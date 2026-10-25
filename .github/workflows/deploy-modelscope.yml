@@ -28,6 +28,34 @@ jobs:
             if [ -n "$NOTIFY_URL" ]; then echo "ALIPAY_NOTIFY_URL=$NOTIFY_URL"; fi
           } > env.production
 
+      - name: 自动创建魔搭 Docker 创空间（幂等，已存在则跳过）
+        env:
+          MS_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
+          MS_STUDIO: ${{ secrets.MODELSCOPE_STUDIO }}
+        if: ${{ env.MS_TOKEN != '' }}
+        run: |
+          SPACE_NAME="${MS_STUDIO##*/}"
+          BODY=$(cat <<JSON
+          {"Name":"$SPACE_NAME","Path":"$SPACE_NAME","SdkType":"docker","Visibility":1,"DeployedByUser":true,"InstanceTypeName":"platform/2v-cpu-16g-mem","InstanceNumber":1,"DiskSize":50,"ExpiredMinutes":-1}
+          JSON
+          )
+          if git ls-remote "https://oauth2:$MS_TOKEN@www.modelscope.cn/studios/$MS_STUDIO.git" >/dev/null 2>&1; then
+            echo "创空间已存在，跳过创建"
+          else
+            echo "创空间不存在，调用魔搭 API 自动创建..."
+            RESP=$(curl -s -X POST -H "Authorization: Bearer $MS_TOKEN" -H "Content-Type: application/json" -d "$BODY" "https://www.modelscope.cn/api/v1/studios")
+            echo "$RESP"
+            OK=$(echo "$RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('Success'))" 2>/dev/null || echo False)
+            MSG=$(echo "$RESP" | python3 -c "import json,sys; print(json.load(sys.stdin).get('Message',''))" 2>/dev/null || echo "")
+            if [ "$OK" != "True" ]; then
+              echo "::error::魔搭创空间自动创建失败：$MSG"
+              echo "::error::若提示「未绑定阿里云账号」：请到 魔搭个人中心 → 账号设置 绑定阿里云账号（Docker 创空间实名要求），完成后重新运行本工作流即可全自动部署"
+              exit 1
+            fi
+            echo "空间创建成功，等待初始化..."
+            sleep 15
+          fi
+
       - name: 推送到魔搭创空间（Docker 自动构建）
         env:
           MS_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
