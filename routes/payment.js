@@ -199,6 +199,16 @@ function ensureFulfillment(outTradeNo) {
       if (n > 0) { o.deliverable.status = "READY"; if (parts.length) o.deliverable.note = "部分失败 " + parts.join("；"); }
       else { o.deliverable.status = "FAILED"; o.deliverable.note = "全部交付物生成失败 " + parts.join("；"); }
     });
+    // 全失败时 25 秒后自动重试一次（数据源偶发限流场景）
+    if (quickErr && deepErr) {
+      setTimeout(() => {
+        store.updateOrder(outTradeNo, (o) => { if (o.deliverable && o.deliverable.status === "FAILED") { o.deliverable = null; } });
+        fulfillmentMemory.delete(outTradeNo);
+        const re = store.findByOutTradeNo(outTradeNo);
+        if (re && re.status === "PAID" && !re.deliverable) ensureFulfillment(outTradeNo);
+      }, 25000);
+      return;
+    }
     fulfillmentMemory.delete(outTradeNo);
   }).catch((e) => {
     console.log(`[fulfillment] exception order=${outTradeNo}:`, e && e.message);

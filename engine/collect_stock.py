@@ -74,7 +74,8 @@ def em_realtime(code):
 
 def tx_realtime(code):
     """腾讯行情快照: GBK字符串，只取稳定字段(名称/现价/昨收/总市值/PB)"""
-    raw = _get(f"https://qt.gtimg.cn/q=sh{code}" if code[0] in "69" else f"https://qt.gtimg.cn/q=sz{code}")
+    raw = _get(f"https://qt.gtimg.cn/q=sh{code}" if code[0] in "69" else f"https://qt.gtimg.cn/q=sz{code}",
+               headers={"Referer": "https://gu.qq.com/", "User-Agent": "Mozilla/5.0"})
     f = raw.decode("gbk", "ignore").split("~")
     return {"name": f[1], "price": float(f[3]), "prev_close": float(f[4]),
             "mcap_yi": float(f[45]), "pb": float(f[46]) if f[46] else None}
@@ -116,7 +117,7 @@ def tx_kline(code, days=450):
     start = (date.today() - timedelta(days=days)).isoformat()
     url = (f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
            f"?param={mkt}{code},day,{start},{date.today().isoformat()},420,qfq")
-    d = json.loads(_get(url))
+    d = json.loads(_get(url, headers={"Referer": "https://gu.qq.com/", "User-Agent": "Mozilla/5.0"}))
     data = (d.get("data") or {}).get(f"{mkt}{code}") or {}
     rows = data.get("qfqday") or data.get("day") or []
     out = []
@@ -277,8 +278,27 @@ def run_stock(cfg, quick=False):
 
     px = (em or tx or bs_last or {}).get("price") or (bs_last and bs_last.get("close")) or (sina_rt and sina_rt["price"])
     if px is None:
-        print(f"✗ {code} 全部来源失效，跳过")
-        return 2
+        print(f"✗ {code} 全部实时来源失效，尝试腾讯日K兜底…")
+        txk = []
+        try:
+            txk = tx_kline(code)
+        except Exception:
+            pass
+        if not txk:
+            print(f"✗ {code} 兜底也失败，跳过")
+            return 2
+        px = txk[-1]["close"]
+        tx = {"price": px, "name": code, "mcap_yi": None, "pb": None, "prev_close": txk[-2]["close"] if len(txk) > 1 else None}
+        bs_last = None; em = None; sina_rt = None; ak_rows = []; bs_rows = []
+        snap["realtime"] = {"price": px, "prev_close": tx["prev_close"], "mcap_yi": None, "pe_ttm": None, "pb": None}
+        snap["technicals"] = technicals(txk)
+        snap["degraded"] = True
+        snap["degraded_note"] = "实时源全部失效，本快照由腾讯日K兜底生成（收盘价口径，无实时PE/PB）"
+        out = SNAP_DIR / f"{code}_{date.today():%Y%m%d}_fallback.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(snap, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"  兜底快照 → {out.name}（{px}，腾讯K线收盘价）")
+        return 0
 
     pe = (em and em["pe_ttm"]) or (bs_last and bs_last.get("pe_ttm"))
     pb = (em and em["pb"]) or (tx and tx.get("pb")) or (bs_last and bs_last.get("pb"))
