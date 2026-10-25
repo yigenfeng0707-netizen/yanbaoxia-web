@@ -58,11 +58,11 @@ router.get("/api/order/:outTradeNo/status", async (req, res) => {
       if (order.status === "PAID") ensureFulfillment(order.outTradeNo);
       return res.json({ orderStatus: order.status, alipayStatus: "UNKNOWN", message: result.sub_msg || result.msg || "查询未返回业务状态" });
     }
-    const alipayStatus = result.trade_status || "UNKNOWN";
+    const alipayStatus = result.trade_status || result.tradeStatus || "UNKNOWN";
     const mapped = TRADE_STATE_MAP[alipayStatus] || "UNKNOWN";
-    if (mapped === "PAID") store.markPaidIdempotently(order.outTradeNo, result.trade_no, formatAlipayTimestamp());
+    if (mapped === "PAID") store.markPaidIdempotently(order.outTradeNo, result.trade_no || result.tradeNo, formatAlipayTimestamp());
     if (store.findByOutTradeNo(order.outTradeNo).status === "PAID") ensureFulfillment(order.outTradeNo);
-    res.json({ orderStatus: mapped === "UNKNOWN" ? order.status : mapped, alipayStatus, tradeNo: result.trade_no || order.tradeNo });
+    res.json({ orderStatus: mapped === "UNKNOWN" ? order.status : mapped, alipayStatus, tradeNo: result.trade_no || result.tradeNo || order.tradeNo });
   } catch (e) {
     res.json({ orderStatus: order.status, alipayStatus: "UNKNOWN", message: e.message });
   }
@@ -88,9 +88,9 @@ router.get("/api/my/order/status", async (req, res) => {
       if (order.status === "PAID") ensureFulfillment(order.outTradeNo);
       return res.json({ outTradeNo: order.outTradeNo, orderStatus: order.status, alipayStatus: "UNKNOWN" });
     }
-    const alipayStatus = result.trade_status || "UNKNOWN";
+    const alipayStatus = result.trade_status || result.tradeStatus || "UNKNOWN";
     const mapped = TRADE_STATE_MAP[alipayStatus] || "UNKNOWN";
-    if (mapped === "PAID") store.markPaidIdempotently(order.outTradeNo, result.trade_no, formatAlipayTimestamp());
+    if (mapped === "PAID") store.markPaidIdempotently(order.outTradeNo, result.trade_no || result.tradeNo, formatAlipayTimestamp());
     if (store.findByOutTradeNo(order.outTradeNo).status === "PAID") ensureFulfillment(order.outTradeNo);
     res.json({ outTradeNo: order.outTradeNo, orderStatus: mapped === "UNKNOWN" ? order.status : mapped, alipayStatus });
   } catch (e) {
@@ -116,7 +116,7 @@ router.post("/api/order/:outTradeNo/refund", async (req, res) => {
       bizContent: { out_trade_no: order.outTradeNo, refund_amount: centsToText(refundCents), refund_reason: req.body.reason || "用户申请退款", out_request_no: outRequestNo },
     });
     if (result.code === "10000") {
-      const fundChanged = result.fund_change === "Y";
+      const fundChanged = (result.fund_change || result.fundChange) === "Y";
       store.addRefundRecord(order.outTradeNo, { outRequestNo, amount: centsToText(refundCents), reason: req.body.reason || "用户申请退款", status: fundChanged ? "SUCCESS" : "PENDING", at: formatAlipayTimestamp() });
       if (fundChanged && refunded + refundCents === toCents(order.totalAmount)) {
         store.markRefunded(order.outTradeNo);
@@ -137,7 +137,7 @@ router.get("/api/order/:outTradeNo/refund/:outRequestNo", async (req, res) => {
     const result = await getAlipaySdk().exec("alipay.trade.fastpay.refund.query", {
       bizContent: { out_trade_no: order.outTradeNo, out_request_no: req.params.outRequestNo },
     });
-    if (result.code === "10000" && result.refund_status === "REFUND_SUCCESS") {
+    if (result.code === "10000" && (result.refund_status || result.refundStatus) === "REFUND_SUCCESS") {
       store.updateRefund(order.outTradeNo, req.params.outRequestNo, { status: "SUCCESS" });
       return res.json({ refundStatus: "REFUND_SUCCESS" });
     }

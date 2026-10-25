@@ -34,7 +34,16 @@ BASE_URL=https://xxx.loca.lt npm start
 - [ ] 移除商户侧 /orders 页或加访问控制（演示页无鉴权）
 - [ ] 人工代码审查（支付宝安全红线）
 
-## 方案D：魔搭创空间 Docker 部署（已实施 ✅ 当前主线）
+## 方案D：魔搭创空间 Docker 部署（已实施 ✅ 已上线）
+
+**线上地址**：
+- 空间页：https://www.modelscope.cn/studios/gsym236998/yanbaoxia
+- 应用直连：https://gsym236998-yanbaoxia.ms.show/（裸 curl 会被 bot 防护拦 403，浏览器 UA 正常）
+
+**运维备忘**：
+- 推送代码到魔搭后**不会自动重建**，需在 Manage 页点 Redeploy（或提示条里的 Redeploy 链接）→ Confirm deployment，约 4 分钟生效
+- 魔搭 master 是保护分支：**禁止 force push**，只能基于空间现有历史正常推送（工作流已按此实现）
+- 沙箱配置经 GitHub Secrets 注入，Action 内 `git add -f` 后随代码入空间仓库（空间可设私有）
 
 GitHub 仓库：https://github.com/yigenfeng0707-netizen/yanbaoxia-web
 
