@@ -9,6 +9,7 @@ RUN npm install --omit=dev --no-fund --no-audit
 COPY . .
 # 引擎脚本入镜像（魔搭持久目录优先由 config.js 在运行时选择）
 COPY engine/collect_stock.py /opt/workbench/scripts/collect_stock.py
+COPY engine/deep_report.py /opt/workbench/scripts/deep_report.py
 COPY engine/watchlist.json /opt/workbench/config/watchlist.json
 COPY engine/prebuilt/ /opt/workbench/output/
 

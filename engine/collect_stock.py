@@ -169,7 +169,9 @@ def em_fundamentals(code):
     return [{"period": r["REPORTDATE"][:10], "revenue_yi": round(r["TOTAL_OPERATE_INCOME"] / 1e8, 2),
              "rev_yoy": round(r["YSTZ"], 2) if r.get("YSTZ") is not None else None,
              "np_yi": round(r["PARENT_NETPROFIT"] / 1e8, 2),
-             "np_yoy": round(r["SJLTZ"], 1) if r.get("SJLTZ") is not None else None} for r in rows]
+             "np_yoy": round(r["SJLTZ"], 1) if r.get("SJLTZ") is not None else None,
+             "roe": round(r["WEIGHTAVG_ROE"], 2) if r.get("WEIGHTAVG_ROE") is not None else None,
+             "eps": round(r["BASIC_EPS"], 2) if r.get("BASIC_EPS") is not None else None} for r in rows]
 
 
 # ---------------- 校验与加工 ----------------
