@@ -19,6 +19,9 @@
   .sample{display:block;text-align:center;margin-top:18px;padding:11px;border:1px dashed #c9a84c;border-radius:10px;color:#c9a84c;text-decoration:none;font-size:14px}
   .chips{display:flex;gap:8px;margin-top:10px}
   .chips span{flex:1;text-align:center;padding:7px 0;border:1px solid #2a2f3d;border-radius:8px;font-size:12px;color:#9aa1b2;cursor:pointer}
+  .pro{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding:14px 16px;border:1px solid #2a2f3d;border-radius:12px;text-decoration:none;color:#e8eaf0;background:#141821}
+  .pro b{font-size:14px}.pro span{display:block;color:#9aa1b2;font-size:12px;margin-top:4px;line-height:1.5}
+  .price2{color:#c9a84c;font-size:16px;font-weight:700;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -37,6 +40,10 @@
   <div class="chips"><span onclick="pick('600519')">贵州茅台</span><span onclick="pick('600036')">招商银行</span><span onclick="pick('300750')">宁德时代</span></div>
   <button id="payBtn" onclick="pay('report_std')">支付宝支付 ¥9.90 · 生成研报</button>
   <div id="msg"></div>
+  <a class="pro" href="https://skillpay.alipay.com/user/product?merchantId=2088712324761003&amp;productId=P0806000210830770" target="_blank" rel="noopener">
+    <div><b>研报侠 Pro · 每日晨报订阅</b><span>自选股每日自动出晨报 · 任意 6 位代码即时报研</span></div>
+    <div class="price2">¥29.9/月</div>
+  </a>
   <p style="text-align:center;margin-top:14px"><a href="/orders" style="color:#9aa1b2;font-size:12px">订单查询 →</a></p>
 </div>
 <script>
