@@ -3,10 +3,14 @@
 > 支付宝 AI 付 PAYATHON 2026 参赛作品（Skill Pay 赛道）— 输入股票代码，AI 生成投资研究报告，支付宝付款即交付。
 
 [![Status](https://img.shields.io/badge/%E9%AD%94%E6%90%AD%E5%88%9B%E7%A9%BA%E9%97%B4-Running-2ea44f)](https://www.modelscope.cn/studios/gsym236998/yanbaoxia)
-[![SkillPay](https://img.shields.io/badge/SkillPay-%E9%94%80%E5%94%AE%E4%B8%AD-c9a84c)](https://skillpay.alipay.com)
+[![SkillPay](https://img.shields.io/badge/SkillPay-%E9%94%80%E5%94%AE%E4%B8%AD-c9a84c)](https://skillpay.alipay.com/user/product?merchantId=2088712324761003&productId=P0806000210827629)
 [![Revenue](https://img.shields.io/badge/%E9%A6%96%E6%97%A5%E7%9C%9F%E5%AE%9E%E8%90%A5%E6%94%B6-%C2%A519.80-2ea44f)](#成绩单)
 
-**线上体验**：https://www.modelscope.cn/studios/gsym236998/yanbaoxia （Docker 公网运行中）
+**线上体验**：https://gsym236998-yanbaoxia.ms.show/ （直连）｜ https://www.modelscope.cn/studios/gsym236998/yanbaoxia （空间页，Docker 公网运行中）
+
+**商品页**：[买断版 ¥9.9](https://skillpay.alipay.com/user/product?merchantId=2088712324761003&productId=P0806000210827629) ｜ [Pro 订阅 ¥29.9/月](https://skillpay.alipay.com/user/product?merchantId=2088712324761003&productId=P0806000210830770)
+
+**免费样例**：[贵州茅台 15 页研报 PDF](https://gsym236998-yanbaoxia.ms.show/sample/600519-sample-report.pdf)
 
 ## 产品能力
 
@@ -19,7 +23,7 @@
 
 ```
 GitHub (push)
-  └─ GitHub Actions：注入支付配置Secrets → 推送魔搭创空间仓库
+  └─ GitHub Actions：注入支付配置Secrets → 推送魔搭创空间仓库 → 调 OpenAPI 触发重建
        └─ 魔搭自动构建 Dockerfile (Node20+Python3, :7860)
             └─ 公网 Running（ms.show 直连 + 空间页嵌入）
 Express 服务
