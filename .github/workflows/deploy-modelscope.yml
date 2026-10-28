@@ -59,4 +59,20 @@ jobs:
           git add -A -f
           git commit -m "deploy: ${{ github.sha }}" || echo "no changes"
           git push ms HEAD:master
-          echo "已推送，魔搭将按 ms_deploy.json 构建 Docker 镜像"
+          echo "已推送，接下来触发创空间重建"
+
+      - name: 触发魔搭创空间重建（推送不会自动重部署）
+        env:
+          MS_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
+          MS_STUDIO: ${{ secrets.MODELSCOPE_STUDIO }}
+        if: ${{ env.MS_TOKEN != '' }}
+        run: |
+          CODE=$(curl -s -o /tmp/deploy.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $MS_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://modelscope.cn/openapi/v1/studios/$MS_STUDIO/deploy")
+          echo "deploy api HTTP $CODE"
+          cat /tmp/deploy.json 2>/dev/null || true
+          if [ "$CODE" != "200" ] && [ "$CODE" != "201" ]; then
+            echo "::warning::自动触发重建失败（HTTP $CODE），请在创空间页面手动点 Redeploy"
+          fi
