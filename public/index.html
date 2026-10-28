@@ -15,24 +15,32 @@
   button{width:100%;margin-top:18px;padding:13px;border:0;border-radius:10px;background:#c9a84c;color:#141414;font-size:15px;font-weight:700;cursor:pointer}
   button:disabled{opacity:.5;cursor:wait}
   #msg{color:#9aa1b2;font-size:13px;text-align:center;margin-top:12px;min-height:18px}
+  .trust{color:#7d8698;font-size:12px;margin-top:10px;line-height:1.6;text-align:center}
+  .sample{display:block;text-align:center;margin-top:18px;padding:11px;border:1px dashed #c9a84c;border-radius:10px;color:#c9a84c;text-decoration:none;font-size:14px}
+  .chips{display:flex;gap:8px;margin-top:10px}
+  .chips span{flex:1;text-align:center;padding:7px 0;border:1px solid #2a2f3d;border-radius:8px;font-size:12px;color:#9aa1b2;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="tag">YANBAOXIA · PAYATHON 2026</div>
   <h1>研报侠</h1>
-  <p class="sub">输入一家上市公司，AI 生成机构级研究报告 + DCF 估值模型。<br>当前为沙箱演示：商品为示例标的贵州茅台已完成的研究成果交付。</p>
+  <p class="sub">输入一家上市公司，AI 生成机构级研究报告 + DCF 估值模型。<br>东财 / 腾讯 / 新浪 / 网易 / baostock 五源交叉校验，关键数字双源一致才输出。</p>
+  <div class="trust">内测阶段 · 沙箱链路已真实成交 3 单 · 单次交付约 30~120 秒</div>
   <div class="sku">
     <div><b>单篇 AI 研究报告</b><span>输入6位A股代码 · 实时多源数据速览研报<br>预置标的（600519）另附15页完整研报+DCF估值模型</span></div>
     <div class="price">¥9.90</div>
   </div>
-  <input id="stockCode" placeholder="输入股票代码，如 600519" maxlength="6" inputmode="numeric"
+  <a class="sample" href="/sample/600519-sample-report.pdf" target="_blank">先看样例 · 贵州茅台 15 页研报（免费）</a>
+  <input id="stockCode" value="600519" placeholder="输入股票代码，如 600519" maxlength="6" inputmode="numeric"
     style="width:100%;box-sizing:border-box;margin-top:16px;padding:12px 14px;border:1px solid #2a2f3d;border-radius:10px;background:#10131a;color:#e8eaf0;font-size:15px;letter-spacing:2px">
-  <button id="payBtn" onclick="pay('report_std')">立即购买（支付宝）</button>
+  <div class="chips"><span onclick="pick('600519')">贵州茅台</span><span onclick="pick('600036')">招商银行</span><span onclick="pick('300750')">宁德时代</span></div>
+  <button id="payBtn" onclick="pay('report_std')">支付宝支付 ¥9.90 · 生成研报</button>
   <div id="msg"></div>
   <p style="text-align:center;margin-top:14px"><a href="/orders" style="color:#9aa1b2;font-size:12px">订单查询 →</a></p>
 </div>
 <script>
+function pick(c){const el=document.getElementById('stockCode');el.value=c;document.getElementById('msg').textContent='';}
 async function pay(sku){
   const btn=document.getElementById('payBtn'), msg=document.getElementById('msg');
   btn.disabled=true; msg.textContent='正在创建订单…';
