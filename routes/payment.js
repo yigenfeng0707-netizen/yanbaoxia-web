@@ -194,8 +194,8 @@ function ensureFulfillment(outTradeNo) {
     store.updateOrder(outTradeNo, (o) => {
       const n = (o.deliverable.files || []).length;
       const parts = [];
-      if (quickErr) parts.push("速览:" + quickErr.slice(0, 120));
-      if (deepErr) parts.push("深度:" + deepErr.slice(0, 120));
+      if (quickErr) parts.push("速览:" + quickErr.slice(0, 350));
+      if (deepErr) parts.push("深度:" + deepErr.slice(0, 350));
       if (n > 0) { o.deliverable.status = "READY"; if (parts.length) o.deliverable.note = "部分失败 " + parts.join("；"); }
       else { o.deliverable.status = "FAILED"; o.deliverable.note = "全部交付物生成失败 " + parts.join("；"); }
     });
