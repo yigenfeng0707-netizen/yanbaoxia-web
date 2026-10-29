@@ -34,7 +34,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SNAP_DIR = ROOT / "data" / "market" / "snapshots"
+SNAP_DIR = Path(os.environ.get("COLLECT_SNAPSHOT_DIR") or (ROOT / "data" / "market" / "snapshots"))
 SNAP_DIR.mkdir(parents=True, exist_ok=True)
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", "Referer": "https://quote.eastmoney.com/"}
 PRICE_TOL, WARN_TOL = 0.005, 0.02
