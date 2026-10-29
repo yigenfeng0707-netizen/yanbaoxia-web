@@ -4,7 +4,7 @@
 | 项 | 现值（沙箱） | 生产 |
 |---|---|---|
 | 网关 | https://openapi-sandbox.dl.alipaydev.com/gateway.do | https://openapi.alipay.com/gateway.do（config.js 沙箱常量处） |
-| appId/私钥/支付宝公钥 | .alipay-sandbox.json | 应用 2021006171661005 的生产密钥（同一套，勿混用；Node.js 用 PKCS#1） |
+| appId/私钥/支付宝公钥 | .alipay-sandbox.json（沙箱应用 9021000170613996） | 生产应用 2021006171661005 的密钥，由 GitHub Secret `SANDBOX_CONFIG_JSON` 注入为容器内 `.alipay-sandbox.json`（不入库；Node.js 用 PKCS#1 原始值） |
 | BASE_URL | http://localhost:3000 | 公网 https 域名 |
 | ALIPAY_NOTIFY_URL | 空（省略） | 公网 HTTPS 地址，如 https://your-domain.com/alipay/notify |
 
