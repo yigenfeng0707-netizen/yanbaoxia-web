@@ -29,7 +29,7 @@
   <div class="tag">YANBAOXIA · PAYATHON 2026</div>
   <h1>研报侠</h1>
   <p class="sub">输入一家上市公司，AI 生成机构级研究报告 + DCF 估值模型。<br>东财 / 腾讯 / 新浪 / 网易 / baostock 五源交叉校验，关键数字双源一致才输出。</p>
-  <div class="trust">支付宝官方收银台 · 已真实成交 · 单次交付约 30~120 秒</div>
+  <div class="trust">支付宝官方签约商家 · SkillPay 已真实成交 · 付款后按指引即时获取研报</div>
   <div class="sku">
     <div><b>单篇 AI 研究报告</b><span>输入6位A股代码 · 实时多源数据速览研报<br>预置标的（600519）另附15页完整研报+DCF估值模型</span></div>
     <div class="price">¥9.90</div>
@@ -38,7 +38,8 @@
   <input id="stockCode" value="600519" placeholder="输入股票代码，如 600519" maxlength="6" inputmode="numeric"
     style="width:100%;box-sizing:border-box;margin-top:16px;padding:12px 14px;border:1px solid #2a2f3d;border-radius:10px;background:#10131a;color:#e8eaf0;font-size:15px;letter-spacing:2px">
   <div class="chips"><span onclick="pick('600519')">贵州茅台</span><span onclick="pick('600036')">招商银行</span><span onclick="pick('300750')">宁德时代</span></div>
-  <button id="payBtn" onclick="pay('report_std')">支付宝支付 ¥9.90 · 生成研报</button>
+  <button id="payBtn" onclick="window.open('https://skillpay.alipay.com/user/product?merchantId=2088712324761003&amp;productId=P0806000210827629','_blank','noopener')">支付宝购买 ¥9.90 · SkillPay 即刻发货</button>
+  <p style="text-align:center;margin:10px 0 0"><a id="webpayEntry" onclick="pay('report_std')" style="color:#9aa1b2;font-size:12px;cursor:pointer;text-decoration:underline">或使用网页直付（内测中）→</a></p>
   <div id="msg"></div>
   <a class="pro" href="https://skillpay.alipay.com/user/product?merchantId=2088712324761003&amp;productId=P0806000210830770" target="_blank" rel="noopener">
     <div><b>研报侠 Pro · 每日晨报订阅</b><span>自选股每日自动出晨报 · 任意 6 位代码即时报研</span></div>
