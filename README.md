@@ -6,17 +6,17 @@
 [![SkillPay](https://img.shields.io/badge/SkillPay-%E9%94%80%E5%94%AE%E4%B8%AD-c9a84c)](https://skillpay.alipay.com/user/product?merchantId=2088712324761003&productId=P0806000210827629)
 [![Revenue](https://img.shields.io/badge/%E9%A6%96%E6%97%A5%E7%9C%9F%E5%AE%9E%E8%90%A5%E6%94%B6-%C2%A529.70-2ea44f)](#成绩单)
 
-**线上体验**：https://gsym236998-yanbaoxia.ms.show/ （直连）｜ https://www.modelscope.cn/studios/gsym236998/yanbaoxia （空间页，Docker 公网运行中）
+**线上体验**：https://opcopcos.cn （自定义域名，推荐）｜ https://gsym236998-yanbaoxia.ms.show/ （直连）｜ [魔搭空间页](https://www.modelscope.cn/studios/gsym236998/yanbaoxia)（Docker 公网运行中）
 
 **商品页**：[买断版 ¥9.9](https://skillpay.alipay.com/user/product?merchantId=2088712324761003&productId=P0806000210827629) ｜ [Pro 订阅 ¥29.9/月](https://skillpay.alipay.com/user/product?merchantId=2088712324761003&productId=P0806000210830770)
 
-**免费样例**：[贵州茅台 15 页研报 PDF](https://gsym236998-yanbaoxia.ms.show/sample/600519-sample-report.pdf)
+**免费样例**：[贵州茅台 15 页研报 PDF](https://opcopcos.cn/sample/600519-sample-report.pdf)
 
 ## 产品能力
 
 - 输入任意 6 位 A 股代码 → 五源采集（东方财富/腾讯/新浪/baostock）→ 交叉校验 → 图文 HTML 速览研报
 - 预置标的（600519）附 15 页完整研报 docx + DCF 估值模型 xlsx
-- 支付宝 AI 网页应用收款全链路：下单 → 沙箱收银台 → RSA2 签名回跳 → 异步通知(公网) → 交易查询兜底 → 自动履约交付
+- 支付宝电脑网站支付全链路（生产网关 openapi.alipay.com）：下单 → 支付宝官方收银台 → RSA2 签名回跳 → 异步通知(公网) → 交易查询兜底 → 自动履约交付；沙箱仅作回退内测入口
 - 商户订单查询页；未支付订单访问交付一律 403
 
 ## 架构
@@ -39,7 +39,7 @@ Express 服务
 ## 成绩单（2026-10-25 上线首日）
 
 - ✅ 支付宝三协议签署（SkillPay / AI 按量付费 / 即刻收），应用 2021006171661005 绑定
-- ✅ 沙箱全链路真实支付闭环（公网下单→收银台→确认→交付）
+- ✅ 生产网关真实支付闭环（公网下单→支付宝官方收银台→确认→交付）；3 单真实成交零退款
 - ✅ SkillPay 上架 **yanbaoxia-research**（买断制 ¥9.9）→ **首日 3 单真实成交 ¥29.70**（三个独立账号，零退款）
 - ✅ 魔搭创空间 Docker 公网 Running，CI/CD 全自动（自动建空间/推代码/构建）
 
