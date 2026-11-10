@@ -4,7 +4,7 @@
 
 [![Status](https://img.shields.io/badge/%E9%AD%94%E6%90%AD%E5%88%9B%E7%A9%BA%E9%97%B4-Running-2ea44f)](https://www.modelscope.cn/studios/gsym236998/yanbaoxia)
 [![SkillPay](https://img.shields.io/badge/SkillPay-%E9%94%80%E5%94%AE%E4%B8%AD-c9a84c)](https://skillpay.alipay.com/user/product?merchantId=2088712324761003&productId=P0806000210827629)
-[![Revenue](https://img.shields.io/badge/%E9%A6%96%E6%97%A5%E7%9C%9F%E5%AE%9E%E8%90%A5%E6%94%B6-%C2%A519.80-2ea44f)](#成绩单)
+[![Revenue](https://img.shields.io/badge/%E9%A6%96%E6%97%A5%E7%9C%9F%E5%AE%9E%E8%90%A5%E6%94%B6-%C2%A529.70-2ea44f)](#成绩单)
 
 **线上体验**：https://gsym236998-yanbaoxia.ms.show/ （直连）｜ https://www.modelscope.cn/studios/gsym236998/yanbaoxia （空间页，Docker 公网运行中）
 
@@ -40,7 +40,7 @@ Express 服务
 
 - ✅ 支付宝三协议签署（SkillPay / AI 按量付费 / 即刻收），应用 2021006171661005 绑定
 - ✅ 沙箱全链路真实支付闭环（公网下单→收银台→确认→交付）
-- ✅ SkillPay 上架 **yanbaoxia-research**（买断制 ¥9.9）→ **首日 2 单真实成交 ¥19.80**（两个独立账号）
+- ✅ SkillPay 上架 **yanbaoxia-research**（买断制 ¥9.9）→ **首日 3 单真实成交 ¥29.70**（三个独立账号，零退款）
 - ✅ 魔搭创空间 Docker 公网 Running，CI/CD 全自动（自动建空间/推代码/构建）
 
 ## 快速开始
