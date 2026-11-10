@@ -16,6 +16,8 @@
   button:disabled{opacity:.5;cursor:wait}
   #msg{color:#9aa1b2;font-size:13px;text-align:center;margin-top:12px;min-height:18px}
   .trust{color:#7d8698;font-size:12px;margin-top:10px;line-height:1.6;text-align:center}
+  .badge{display:inline-block;background:#c9a84c;color:#141414;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle}
+  .price-old{color:#5a6173;text-decoration:line-through;font-size:14px;font-weight:400;margin-right:6px}
   .sample{display:block;text-align:center;margin-top:18px;padding:11px;border:1px dashed #c9a84c;border-radius:10px;color:#c9a84c;text-decoration:none;font-size:14px}
   .chips{display:flex;gap:8px;margin-top:10px}
   .chips span{flex:1;text-align:center;padding:7px 0;border:1px solid #2a2f3d;border-radius:8px;font-size:12px;color:#9aa1b2;cursor:pointer}
@@ -29,16 +31,16 @@
   <div class="tag">YANBAOXIA · PAYATHON 2026</div>
   <h1>研报侠</h1>
   <p class="sub">输入一家上市公司，AI 生成机构级研究报告 + DCF 估值模型。<br>东财 / 腾讯 / 新浪 / 网易 / baostock 五源交叉校验，关键数字双源一致才输出。</p>
-  <div class="trust">支付宝官方签约商家 · SkillPay 已真实成交 · 付款后按指引即时获取研报</div>
+  <div class="trust">支付宝官方签约商家 · 已售 3 单 · 零退款 · 付款后按指引即时获取研报</div>
   <div class="sku">
     <div><b>单篇 AI 研究报告</b><span>输入6位A股代码 · 实时多源数据速览研报<br>预置标的（600519）另附15页完整研报+DCF估值模型</span></div>
-    <div class="price">¥9.90</div>
+    <div class="price"><span class="price-old">¥19.90</span>¥9.90<span class="badge">首发价</span></div>
   </div>
   <a class="sample" href="/sample/600519-sample-report.pdf" target="_blank">先看样例 · 贵州茅台 15 页研报（免费）</a>
   <input id="stockCode" value="600519" placeholder="输入股票代码，如 600519" maxlength="6" inputmode="numeric"
     style="width:100%;box-sizing:border-box;margin-top:16px;padding:12px 14px;border:1px solid #2a2f3d;border-radius:10px;background:#10131a;color:#e8eaf0;font-size:15px;letter-spacing:2px">
   <div class="chips"><span onclick="pick('600519')">贵州茅台</span><span onclick="pick('600036')">招商银行</span><span onclick="pick('300750')">宁德时代</span></div>
-  <button id="payBtn" onclick="window.open('https://skillpay.alipay.com/user/product?merchantId=2088712324761003&amp;productId=P0806000210827629','_blank','noopener')">支付宝购买 ¥9.90 · SkillPay 即刻发货</button>
+  <button id="payBtn" onclick="window.open('https://skillpay.alipay.com/user/product?merchantId=2088712324761003&amp;productId=P0806000210827629','_blank','noopener')">支付宝购买 · 限时首发价 ¥9.90 · SkillPay 即刻发货</button>
   <p style="text-align:center;margin:10px 0 0"><a id="webpayEntry" onclick="pay('report_std')" style="color:#9aa1b2;font-size:12px;cursor:pointer;text-decoration:underline">或使用网页直付（内测中）→</a></p>
   <div id="msg"></div>
   <a class="pro" href="https://skillpay.alipay.com/user/product?merchantId=2088712324761003&amp;productId=P0806000210830770" target="_blank" rel="noopener">
